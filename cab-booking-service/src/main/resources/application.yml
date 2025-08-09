@@ -1,0 +1,25 @@
+# Cab Booking Service - Handles ride bookings (stateless)
+server:
+  port: 8081
+
+spring:
+  application:
+    name: booking-service
+
+# No database needed - uses in-memory map for storing bookings
+
+# Service discovery
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+# Health monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+fare:
+  service-url: "http://fare-service/api/fare/calculate"

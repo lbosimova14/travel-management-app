@@ -1,0 +1,57 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: booking-service
+          uri: lb://booking-service
+          predicates:
+            - Path=/api/bookings/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: booking-cb
+                fallbackUri: forward:/fallback/booking
+
+        - id: fare-service
+          uri: lb://fare-service
+          predicates:
+            - Path=/api/fare/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: fare-cb
+                fallbackUri: forward:/fallback/fare
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        minimumNumberOfCalls: 5
+        slidingWindowSize: 10
+    instances:
+      booking-cb:
+        base-config: default
+      fare-cb:
+        base-config: default
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
